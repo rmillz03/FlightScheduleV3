@@ -65,8 +65,6 @@ char validateYesNo(const char* prompt)
 			(inputValue != 'N') )//check input within range
 		{
 			cout << "\n\t\tPlease enter 'Y' or 'N'.";
-			//cin.clear(); //clear the cin error flag
-			//cin.ignore(10000, '\n'); //flush the input buffer
 			keepTrying = true;
 		}
 	} while (keepTrying);
@@ -167,6 +165,7 @@ int main()
 
 	Pilot aryPilots[MAX_SIZE];
 	Aircraft aryAircraft[MAX_SIZE];
+	Flight aryFlights[MAX_SIZE];
 
 	do
 	{
@@ -213,7 +212,7 @@ int main()
 		case 2:
 			system("CLS");
 			//create new aircraft
-			cout << "\n\t\t========== Creating New Pilot Record ==========\n\n";
+			cout << "\n\t\t========== Creating New Aircraft Record ==========\n\n";
 			cout << "\n\t\tEnter the aircraft model: ";
 			cin.ignore();
 			getline(cin, model);
@@ -246,16 +245,20 @@ int main()
 			system("CLS");
 			//print out pilot roster
 			cout << "\n\t\t========== Pilot Roster ==========\n\n";
-			cout << "\n\t\tIndex    Name   ID   Call Sign";
+			cout << "\n\t\t" << setw(5) << "Index"
+				<< setw(10) << "Name" 
+				<< setw(20) << "ID"  
+				<< setw(20) << "Call Sign";
 
 			recSize = sizeof(pilotRec);
 			rewind(filePilots);
 			indexCount = 0;
 			while (fread(&pilotRec, recSize, 1, filePilots) == 1)
 			{
-				cout << "\n\t\t" << to_string(indexCount)<< "     " << pilotRec.getID() 
-					<< setw(10) << pilotRec.getName()
-					<< pilotRec.getCallSign() << "\n";
+				cout << "\n\t\t" << setw(5) << to_string(indexCount)
+					<< setw(10) << pilotRec.getID()
+					<< setw(20) << pilotRec.getName()
+					<< setw(20) << pilotRec.getCallSign();
 				aryPilots[indexCount] = pilotRec;
 				indexCount++;
 			}
@@ -266,15 +269,19 @@ int main()
 			//print aircraft list
 			system("CLS");
 			cout << "\n\t\t========== Aircraft Manifest ==========\n\n";
-			cout << "\n\t\tIndex     Model    Passngers";
+			cout << "\n\t\t" << setw(5) << "Index"
+				<< setw(15) << "Model"
+				<< setw(10) << "# PAX";
+			
 			
 			recSize = sizeof(airRec);
 			rewind(fileAircraft);
 			indexCount = 0; 
 			while (fread(&airRec, recSize, 1, fileAircraft) == 1)
 			{
-				cout << "\n\t\t"<<to_string(indexCount)<<"  " << airRec.getModel() 
-					<< setw(10) << airRec.getPaxNum() << "\n";
+				cout << "\n\t\t"<< setw(5) << to_string(indexCount)
+					<<setw(15) << airRec.getModel() 
+					<< setw(10) << airRec.getPaxNum();
 				aryAircraft[indexCount] = airRec;
 				indexCount++;
 			}
@@ -284,7 +291,6 @@ int main()
 
 			cout << endl;
 
-			//flightRec.setTime();
 			prompt = "Please set times using a 24-hour time format. Please do not include a colon."
 				"\n\t\tExample, 10:30AM should be written as 1030 and 10:30PM will be written as 2230."
 				"\n\n\t\tWhen is the flight scheduled to take off? ";
@@ -303,7 +309,7 @@ int main()
 			{
 				cout << e.what() << "\n";
 			}
-			cout << "\n\nPlease choose Option-4 at the main menu to see the flight schedule.\n";
+			
 			systemPause();
 			break;
 		case 4:
@@ -332,16 +338,20 @@ int main()
 				case 1:
 					//print out pilot roster
 					cout << "\n\t\t========== Pilot Roster ==========\n\n";
-					cout << "\n\t\tIndex    Name   ID   Call Sign";
+					cout << "\n\t\t" << setw(5) << "Index"
+						<< setw(10) << "Name"
+						<< setw(20) << "ID"
+						<< setw(20) << "Call Sign";
 
 					recSize = sizeof(pilotRec);
 					rewind(filePilots);
 					indexCount = 0;
 					while (fread(&pilotRec, recSize, 1, filePilots) == 1)
 					{
-						cout << "\n\t\t" << to_string(indexCount) << "     " << pilotRec.getID()
-							<< setw(10) << pilotRec.getName()
-							<< pilotRec.getCallSign() << "\n";
+						cout << "\n\t\t" << setw(5) << to_string(indexCount)
+							<< setw(10) << pilotRec.getID()
+							<< setw(20) << pilotRec.getName()
+							<< setw(20) << pilotRec.getCallSign();
 						aryPilots[indexCount] = pilotRec;
 						indexCount++;
 					}
@@ -394,15 +404,18 @@ int main()
 					//print aircraft list
 					system("CLS");
 					cout << "\n\t\t========== Aircraft Manifest ==========\n\n";
-					cout << "\n\t\tIndex     Model    Passngers";
+					cout << "\n\t\t" << setw(5) << "Index"
+						<< setw(15) << "Model"
+						<< setw(10) << "# PAX";
 
 					recSize = sizeof(airRec);
 					rewind(fileAircraft);
 					indexCount = 0;
 					while (fread(&airRec, recSize, 1, fileAircraft) == 1)
 					{
-						cout << "\n\t\t" << to_string(indexCount) << "  " << airRec.getModel()
-							<< setw(10) << airRec.getPaxNum() << "\n";
+						cout << "\n\t\t" << setw(5) << to_string(indexCount)
+							<< setw(15) << airRec.getModel()
+							<< setw(10) << airRec.getPaxNum();
 						aryAircraft[indexCount] = airRec;
 						indexCount++;
 					}
@@ -453,6 +466,64 @@ int main()
 					}
 					break;
 				case 3:
+					//delete flight
+					system("CLS");
+					recSize = sizeof(flightRec);
+					rewind(fileFlights);
+					indexCount = 0;
+					while (fread(&flightRec, recSize, 1, fileFlights) == 1)
+					{
+						cout << "\n\t\tIndex #" << indexCount;
+						cout << flightRec.printFlight() << endl;
+						aryFlights[indexCount] = flightRec;
+						indexCount++;
+					}
+
+					indexNum = validateSelection("Please enter the index number: ", 0, indexCount - 1);
+
+					prompt = "\n\t\tAre you sure you want to delete this index? ";
+					confirm = validateYesNo(prompt);
+
+					if ((confirm == 'y') || (confirm == 'Y'))
+					{
+						/*
+						* add array records to a temp file,
+						* skipping the record to be deleted.
+						* delete original record.
+						* rename temp file as orignal name.
+						*/
+						fileTemp = fopen("temp.txt", "w+");
+						recSize = sizeof(flightRec);
+
+						for (int x = 0; x < indexCount; x++)
+						{
+							if (x != indexNum)
+							{
+								try
+								{
+									fseek(fileTemp, 0, SEEK_END);
+									fwrite(&aryFlights[x], recSize, 1, fileTemp);
+								}
+								catch (exception& e)
+								{
+									cout << e.what() << "\n";
+								}
+							}
+						}
+
+						fclose(fileTemp);
+						fclose(fileFlights);
+						remove("flightrecords.txt");
+						rename("temp.txt", "flightrecords.txt");
+						filePilots = fopen("flightrecords.txt", "a+"); //reopen the file for use
+
+						cout << "\n\n\t\tRecord removed from file. ";
+					}
+					else
+					{
+						cout << "\n\t\tRecord was NOT deleted. ";
+					}
+					systemPause();
 					break;
 				default:
 					;
