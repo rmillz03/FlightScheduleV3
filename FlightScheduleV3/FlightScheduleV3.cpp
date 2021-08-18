@@ -2,11 +2,12 @@
 #include <string>
 #include <iomanip>
 #include <stdio.h>
-
+#include <cstdlib>
 
 #include "Pilot.h"
 #include "Aircraft.h"
 #include "Flight.h"
+
 using namespace std;
 
 const int MAX_SIZE = 100;
@@ -42,6 +43,36 @@ int validateSelection(const char* prompt, int min, int max)
 	return inputValue;
 }
 
+char validateYesNo(const char* prompt)
+{
+	char inputValue;
+	bool keepTrying;
+	do
+	{
+		keepTrying = false;
+		cout << "\n\n\t\t " << prompt;
+		cin >> inputValue;
+		if (!cin) //check for type mismatch
+		{
+			cout << "\n\t\tPlease enter 'Y' or 'N'.";
+			cin.clear(); //clear the cin error flag
+			cin.ignore(10000, '\n'); //flush the input buffer
+			keepTrying = true;
+		}
+		else if ( (inputValue !='y') && 
+			(inputValue !='Y') && 
+			(inputValue != 'n') && 
+			(inputValue != 'N') )//check input within range
+		{
+			cout << "\n\t\tPlease enter 'Y' or 'N'.";
+			//cin.clear(); //clear the cin error flag
+			//cin.ignore(10000, '\n'); //flush the input buffer
+			keepTrying = true;
+		}
+	} while (keepTrying);
+
+	return inputValue;
+}
 
 int mainMenu()
 {
@@ -64,8 +95,15 @@ int recordMenu()
 	cout << "\n\t\t2 - Delete an aircraft record";
 	cout << "\n\t\t3 - Delete a flight record";
 	cout << "\n\t\t0 - Return to the main menu";
-	cout << "\n\nPlease select a number: ";
 	return validateSelection("Please select a number: ", 0, 5);
+}
+
+void systemPause()
+{
+	cout << "\n\n\t\tPress any key to continue...";
+	cin.ignore();
+	cin.get();
+	return;
 }
 
 /* ****************************************
@@ -75,13 +113,12 @@ int main()
 {
 
 	/* ****************************************
-	*  START Database Initialization 
+	*  START File Initialization 
 	**************************************** */	
 	FILE* filePilots, *fileAircraft, *fileFlights, *fileTemp;
 	long int recSize;
 	
 	filePilots = fopen("pilotrecords.txt", "a+");
-
 	if (filePilots == NULL)
 	{
 		filePilots = fopen("pilotrecords.txt", "w+");
@@ -93,18 +130,36 @@ int main()
 	}
 
 	fileAircraft = fopen("aircraftrecords.txt", "a+");
+	if (fileAircraft == NULL)
+	{
+		fileAircraft = fopen("aircraftrecords.txt", "w+");
+
+		if (fileAircraft == NULL)
+		{
+			cout << ("Cannot open file: aircraftrecords.txt");
+		}
+	}
 
 	fileFlights = fopen("flightrecords.txt", "a+");
+	if (fileFlights == NULL)
+	{
+		fileFlights = fopen("flightrecords.txt", "w+");
 
+		if (fileFlights == NULL)
+		{
+			cout << ("Cannot open file: flightrecords.txt");
+		}
+	}
 
 	/* ****************************************
-	*  END Database Initialization
+	*  END File Initialization
 	**************************************** */
 
 	int menuSelection;
 	int ID, pax, indexNum, indexCount;
 	string name, codeName, model;
 	const char* prompt;
+	char confirm;
 
 	Pilot pilotRec;
 	Aircraft airRec;
@@ -115,14 +170,14 @@ int main()
 
 	do
 	{
-		//mainMenu();
-		//cin >> menuSelection;
-		//menuSelection = mainMenu();
+		menuSelection = mainMenu();
 
-		system("CLS");
-		switch (mainMenu())
+		switch (menuSelection)
 		{
+		case 0: 
+			break;
 		case 1:
+			system("CLS");
 			//create new pilot
 			cout << "\n\t\t========== Creating New Pilot Record ==========\n\n";
 			cout << "\n\t\tEnter pilot ID number: ";
@@ -152,10 +207,11 @@ int main()
 				cout << e.what() << "\n";
 			}
 			
-			system("PAUSE");
+			systemPause();
 
 			break;
 		case 2:
+			system("CLS");
 			//create new aircraft
 			cout << "\n\t\t========== Creating New Pilot Record ==========\n\n";
 			cout << "\n\t\tEnter the aircraft model: ";
@@ -181,12 +237,13 @@ int main()
 				cout << e.what() << "\n";
 			}
 
-			system("PAUSE");
+			systemPause();
 
 			break;
 		case 3:
 			//assign flight
 			//
+			system("CLS");
 			//print out pilot roster
 			cout << "\n\t\t========== Pilot Roster ==========\n\n";
 			cout << "\n\t\tIndex    Name   ID   Call Sign";
@@ -247,10 +304,11 @@ int main()
 				cout << e.what() << "\n";
 			}
 			cout << "\n\nPlease choose Option-4 at the main menu to see the flight schedule.\n";
-			system("PAUSE");
+			systemPause();
 			break;
 		case 4:
 			//print schedule
+			system("CLS");
 			recSize = sizeof(flightRec);
 			rewind(fileFlights);
 			while (fread(&flightRec, recSize, 1, fileFlights) == 1)
@@ -258,75 +316,150 @@ int main()
 				cout << flightRec.printFlight() << endl;
 			}
 			
-			system("PAUSE");
+			systemPause();
 			break;
 		case 5:
-			//delete records
-			menuSelection = recordMenu();
-
-			switch (menuSelection)
+			do
 			{
-			case 1:
-				//print out pilot roster
-				cout << "\n\t\t========== Pilot Roster ==========\n\n";
-				cout << "\n\t\tIndex    Name   ID   Call Sign";
+				//delete records
+				system("CLS");
+				menuSelection = recordMenu();
 
-				recSize = sizeof(pilotRec);
-				rewind(filePilots);
-				indexCount = 0;
-				while (fread(&pilotRec, recSize, 1, filePilots) == 1)
+				switch (menuSelection)
 				{
-					cout << "\n\t\t" << to_string(indexCount) << "     " << pilotRec.getID()
-						<< setw(10) << pilotRec.getName()
-						<< pilotRec.getCallSign() << "\n";
-					aryPilots[indexCount] = pilotRec;
-					indexCount++;
-				}
-				cout << "\n\nPlease enter the index number: ";
-				cin >> indexNum;
+				case 0:
+					break;
+				case 1:
+					//print out pilot roster
+					cout << "\n\t\t========== Pilot Roster ==========\n\n";
+					cout << "\n\t\tIndex    Name   ID   Call Sign";
 
-				/*
-				* add pilot array records to a temp file,
-				* skipping the record to be deleted.
-				* delete original record.
-				* rename temp file as orignal name.
-				*/
-				fileTemp = fopen("temp.txt", "w+");
-				recSize = sizeof(pilotRec);
-
-				for (int x = 0; x < indexCount; x++)
-				{
-					if (x != indexNum)
+					recSize = sizeof(pilotRec);
+					rewind(filePilots);
+					indexCount = 0;
+					while (fread(&pilotRec, recSize, 1, filePilots) == 1)
 					{
-						try
-						{
-							fseek(fileTemp, 0, SEEK_END);
-							fwrite(&aryPilots[x], recSize, 1, fileTemp);
-						}
-						catch (exception& e)
-						{
-							cout << e.what() << "\n";
-						}
+						cout << "\n\t\t" << to_string(indexCount) << "     " << pilotRec.getID()
+							<< setw(10) << pilotRec.getName()
+							<< pilotRec.getCallSign() << "\n";
+						aryPilots[indexCount] = pilotRec;
+						indexCount++;
 					}
+					indexNum = validateSelection("Please enter the index number: ", 0, indexCount - 1);
+
+					prompt = "\n\t\tAre you sure you want to delete this index? ";
+					confirm = validateYesNo(prompt);
+
+					if ((confirm == 'y') || (confirm == 'Y'))
+					{
+						/*
+						* add pilot array records to a temp file,
+						* skipping the record to be deleted.
+						* delete original record.
+						* rename temp file as orignal name.
+						*/
+						fileTemp = fopen("temp.txt", "w+");
+						recSize = sizeof(pilotRec);
+
+						for (int x = 0; x < indexCount; x++)
+						{
+							if (x != indexNum)
+							{
+								try
+								{
+									fseek(fileTemp, 0, SEEK_END);
+									fwrite(&aryPilots[x], recSize, 1, fileTemp);
+								}
+								catch (exception& e)
+								{
+									cout << e.what() << "\n";
+								}
+							}
+						}
+
+						fclose(fileTemp);
+						fclose(filePilots);
+						remove("pilotrecords.txt");
+						rename("temp.txt", "pilotrecords.txt");
+						filePilots = fopen("pilotrecords.txt", "a+"); //reopen the file for use
+
+						cout << "\n\nRecord removed from file. ";
+					}
+					else
+					{
+						cout << "\n\t\tRecord was NOT deleted. ";
+					}
+					break;
+				case 2:
+					//print aircraft list
+					system("CLS");
+					cout << "\n\t\t========== Aircraft Manifest ==========\n\n";
+					cout << "\n\t\tIndex     Model    Passngers";
+
+					recSize = sizeof(airRec);
+					rewind(fileAircraft);
+					indexCount = 0;
+					while (fread(&airRec, recSize, 1, fileAircraft) == 1)
+					{
+						cout << "\n\t\t" << to_string(indexCount) << "  " << airRec.getModel()
+							<< setw(10) << airRec.getPaxNum() << "\n";
+						aryAircraft[indexCount] = airRec;
+						indexCount++;
+					}
+
+					indexNum = validateSelection("Please enter the index number: ", 0, indexCount - 1);
+
+					prompt = "\n\t\tAre you sure you want to delete this index? ";
+					confirm = validateYesNo(prompt);
+
+					if ((confirm == 'y') || (confirm == 'Y'))
+					{
+						/*
+						* add array records to a temp file,
+						* skipping the record to be deleted.
+						* delete original record.
+						* rename temp file as orignal name.
+						*/
+						fileTemp = fopen("temp.txt", "w+");
+						recSize = sizeof(airRec);
+
+						for (int x = 0; x < indexCount; x++)
+						{
+							if (x != indexNum)
+							{
+								try
+								{
+									fseek(fileTemp, 0, SEEK_END);
+									fwrite(&aryAircraft[x], recSize, 1, fileTemp);
+								}
+								catch (exception& e)
+								{
+									cout << e.what() << "\n";
+								}
+							}
+						}
+
+						fclose(fileTemp);
+						fclose(fileAircraft);
+						remove("aircraftrecords.txt");
+						rename("temp.txt", "aircraftrecords.txt");
+						filePilots = fopen("aircraftrecords.txt", "a+"); //reopen the file for use
+
+						cout << "\n\n\t\tRecord removed from file. ";
+					}
+					else
+					{
+						cout << "\n\t\tRecord was NOT deleted. ";
+					}
+					break;
+				case 3:
+					break;
+				default:
+					;
 				}
-
-				fclose(fileTemp);
-				fclose(filePilots);
-				remove("pilotrecords.txt");
-				rename("temp.txt", "pilotrecords.txt");
-				filePilots = fopen("pilotrecords.txt", "a+"); //reopen the file for use
-
-				break;
-			case 2:
-				break;
-			case 3:
-				break;
-			default:
-				menuSelection = 1; //make a non-zero num to continue to main
-			}
-
-			cout << "\n\nRecord removed from file. ";
-			system("PAUSE");
+				systemPause();
+			} while (menuSelection != 0);
+			menuSelection = 1; //make a non-zero num so main does not exit
 			break;
 		default:
 			;

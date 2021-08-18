@@ -41,10 +41,10 @@ string Flight::getPlaneModel()
 // CLASS FUNC
 string Flight::printFlight()
 {
-	string output = pilot.getName()	+ ", aka " + pilot.getCallSign()
+	string output = "\n\t\t"+ pilot.getName() + ", aka " + pilot.getCallSign()
 			+ ", will be flying the " + plane.getModel() + ". "
-			+ "There are " + to_string(plane.getPaxNum()) + " passengers on board. "
-			+ "Takeoff is at " + to_string(takeoff) + ".\n";
+			+ "\n\t\tThere are " + to_string(plane.getPaxNum()) + " passengers on board. "
+			+ "\n\t\tTakeoff is at " + to_string(takeoff) + ".\n";
 	return output;
 }
 
